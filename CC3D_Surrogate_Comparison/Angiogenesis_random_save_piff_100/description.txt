@@ -1,0 +1,3 @@
+generate_images: same as Angiogenesis_random but used to save out many pif images and equivalent [fgbg,vegf] image stacks for the unet surrogate. This is for generating images to compare evaluation speed of cc3d alone vs the neural net.
+
+evaluate_100_mcs_cc3d: drag pif files from workspace and zarr_files generated into here after running the model in generate_images. This is now data and a model to compare evaluation times for a single step of 100mcs between a DL surrogate model and native cc3d execution. code to compare in compare_100mcs_speed.py

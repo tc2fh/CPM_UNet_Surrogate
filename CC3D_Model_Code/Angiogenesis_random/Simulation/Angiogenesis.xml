@@ -1,0 +1,121 @@
+<CompuCell3D Revision="20210612" Version="4.5.0">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>20000</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="256" y="256" z="1"/>
+      <Steps>20000</Steps>
+      <Temperature>8.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      <!-- <RandomSeed>167473</RandomSeed> comment out random seed to allow for stochasticity -->
+      <Boundary_x>Periodic</Boundary_x>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      <!-- only one cell type: EC = endothelial cell. -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="EC"/>
+      <CellType TypeId="2" TypeName="Temp"/>
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      <VolumeEnergyParameters CellType="EC" LambdaVolume="5.0" TargetVolume="50"/>
+      <VolumeEnergyParameters CellType="Temp" LambdaVolume="100" TargetVolume="0"/>
+   </Plugin>
+   
+   <!-- The choice of target surface was made considering a round 2D cell. I am using cell volume 22.5. I highly suggest you to change this parameter by considering the cell as a square instead of a circle, it will definetely work better.
+   because it is the average cell volume during the simulation. It is lower due to contact energy and 
+   chemotactic pressure -->
+   <Plugin Name="Surface">
+   <SurfaceEnergyParameters CellType="EC" LambdaSurface="1.0" TargetSurface="16.8"/>
+    </Plugin>
+   
+   <Plugin Name="CenterOfMass">
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Here I set contact energies to neutral, i.e., cells have no preference 
+      to be in contact with medium or other cells -->
+      <!-- If you want cells to stick to each other, simply increase Medium-EC energy or decrease EC-EC. -->
+      <!-- If you want cells to avoid each other, do the opposite. -->
+      <Energy Type1="Medium" Type2="Medium">5.0</Energy>
+      <Energy Type1="Medium" Type2="EC">8.2</Energy>
+      <Energy Type1="EC" Type2="EC">6.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="VEGF">
+         <!-- I set EC to chemotact according to VEGF gradients. Since all ECs secrete VEGF,
+         this will make them attract to each other at short-medium distances. -->
+         <!-- I set EC to advance only towards medium, this is important so they stop pushing against
+         each other when they reach contact. -->
+         <!-- The Lambda parameter regulates the chemotactic forces acting over ECs boundaries. -->
+         <!-- The saturation parameter is important to prevent cell disruption when VEGF is too steep
+         and intesifies chemotaxis otherwise. -->
+         <ChemotaxisByType ChemotactTowards="Medium" SaturationLinearCoef="0.5" Lambda="2000.0" Type="EC"/>
+         <!-- <ChemotaxisByType ChemotactTowards="Medium" LogScaledCoef="0.00001" Lambda="1000.0" Type="EC"/> -->
+      </ChemicalField>
+   </Plugin>
+   
+   <Plugin Name="LengthConstraint">
+      <LengthEnergyParameters CellType="EC" LambdaLength="0.0" TargetLength="12"/>
+   </Plugin>
+   
+   <Steppable Frequency="10000" Type="PIFDumper">
+       
+       <!-- Periodically stores cell layout configuration in a piff format -->
+       <PIFName>MCS_1000</PIFName>
+       <PIFFileExtension>piff</PIFFileExtension>
+    </Steppable>
+
+
+   <Steppable Type="DiffusionSolverFE">
+      <DiffusionField Name="VEGF">
+         <DiffusionData>
+            <FieldName>VEGF</FieldName>
+            <!-- Diffusion constant can stay fixed -->
+            <GlobalDiffusionConstant>1.0</GlobalDiffusionConstant>
+            <!-- The decay constant will regulate how far VEGF will reach away from cells. -->
+            <!-- High decays cause higher gradients outside cell clusters, which makes filaments narrower. -->
+            <!-- Lower decays cause lower gradients outside cell clusters, which thickens filaments. -->
+            <!-- Lower decays also promotes interaction at longer ranges. This global attraction between cells promotes
+            formation of big cell blobs. -->
+            <GlobalDecayConstant>0.6</GlobalDecayConstant> 
+            <!-- There is no reason to set diffusion different inside EC -->
+            <DiffusionCoefficient CellType="EC">1.0</DiffusionCoefficient>
+            <!-- A positive decay inside EC is more realistic, but I set it to zero because the objective was to 
+            isolte the angiogenesis phenomenon. For that, we don't need decay inside EC. -->
+            <DecayCoefficient CellType="EC">0.0</DecayCoefficient>
+         </DiffusionData>
+         <SecretionData>
+            <!-- Secretion is the amount of VEGF that EC produces each MCS. Same case as diffusion constant: I leave it
+            fixed and let the job be done by the other parameters. -->
+            <Secretion Type="EC">0.1</Secretion>
+         </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <Periodic/>
+            </Plane>
+            <Plane Axis="Y">
+               <Periodic/>
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+      
+      <Region>
+         <BoxMin x="0" y="0" z="0"/>
+         <BoxMax x="255" y="255" z="1"/>
+         <Gap>1</Gap>
+         <Width>3</Width>
+         <Types>EC,Temp,Temp,Temp</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>

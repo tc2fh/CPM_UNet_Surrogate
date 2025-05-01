@@ -1,0 +1,105 @@
+<CompuCell3D Revision="20210612" Version="4.5.0">
+   
+   <Metadata>
+      <NumberOfProcessors>1</NumberOfProcessors>
+      <DebugOutputFrequency>10000</DebugOutputFrequency>
+   </Metadata>
+   
+   <Potts>
+      <Dimensions x="256" y="256" z="1" />
+      <Steps>100</Steps>
+      <Temperature>8.0</Temperature>
+      <NeighborOrder>1</NeighborOrder>
+      
+      <Boundary_x>Periodic</Boundary_x>
+      <Boundary_y>Periodic</Boundary_y>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <CellType TypeId="0" TypeName="Medium" />
+      <CellType TypeId="1" TypeName="EC" />
+      <CellType TypeId="2" TypeName="Temp" />
+   </Plugin>
+   
+   <Plugin Name="Volume">
+      
+      
+      
+      <VolumeEnergyParameters CellType="EC" LambdaVolume="5.0" TargetVolume="50" />
+      <VolumeEnergyParameters CellType="Temp" LambdaVolume="100" TargetVolume="0" />
+   </Plugin>
+   
+   
+   <Plugin Name="Surface">
+   <SurfaceEnergyParameters CellType="EC" LambdaSurface="1.0" TargetSurface="16.8" />
+    </Plugin>
+   
+   <Plugin Name="CenterOfMass">
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      
+      
+      
+      
+      <Energy Type1="Medium" Type2="Medium">5.0</Energy>
+      <Energy Type1="Medium" Type2="EC">8.2</Energy>
+      <Energy Type1="EC" Type2="EC">6.0</Energy>
+      <NeighborOrder>4</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="Chemotaxis">
+      <ChemicalField Name="VEGF">
+         
+         
+         
+         
+         <ChemotaxisByType ChemotactTowards="Medium" SaturationLinearCoef="0.5" Lambda="2000.0" Type="EC" />
+         
+      </ChemicalField>
+   </Plugin>
+   
+   <Plugin Name="LengthConstraint">
+      
+      
+      <LengthEnergyParameters CellType="EC" LambdaLength="0.0" TargetLength="12" />
+   </Plugin>
+
+   <Steppable Type="DiffusionSolverFE">
+      <DiffusionField Name="VEGF">
+         <DiffusionData>
+            <FieldName>VEGF</FieldName>
+            
+            <GlobalDiffusionConstant>1.0</GlobalDiffusionConstant>
+            
+            
+            
+            
+            <GlobalDecayConstant>0.6</GlobalDecayConstant> 
+            
+            
+            <DiffusionCoefficient CellType="EC">1.0</DiffusionCoefficient>
+            
+            <DecayCoefficient CellType="EC">0.0</DecayCoefficient>
+         </DiffusionData>
+         <SecretionData>
+            
+            <Secretion Type="EC">0.1</Secretion>
+         </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <Periodic />
+            </Plane>
+            <Plane Axis="Y">
+               <Periodic />
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+   </Steppable>
+   
+   <Steppable Type="PIFInitializer">
+      <PIFName>mcs10000.piff</PIFName>
+   </Steppable>
+
+</CompuCell3D>

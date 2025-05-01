@@ -1,0 +1,5 @@
+<Simulation version="4.2.5">
+   <XMLScript Type="XMLScript">Simulation/Angiogenesis.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/Angiogenesis.py</PythonScript>
+   <Resource Type="Python">Simulation/AngiogenesisSteppables.py</Resource>
+</Simulation>
